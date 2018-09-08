@@ -1,0 +1,67 @@
+<html>
+
+<head>
+  <title>Google</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <link href="https://fonts.googleapis.com/css?family=Karla" rel="stylesheet">
+</head>
+
+<body>
+  <div id="app">
+      <h1>{{ price }}</h1>
+  </div>
+
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            price: '000'
+        }
+    })
+    let url = 'wss://www.bitmex.com/realtime?subscribe=trade:XBTUSD'
+    let ws = new WebSocket(url);
+    ws.onopen = function(evt) {
+        console.log('socket open')
+    };
+    ws.onmessage = function(evt) {
+        let data = JSON.parse(evt.data)
+        let vprice = data["data"][0].price;
+        app.price = Math.round(vprice);
+    };
+    ws.onclose = function(evt) {
+        console.log('socket closed')
+    };
+    ws.onerror = function(evt) {
+       console.log('socket connection error')
+    };
+
+</script>
+
+<style>
+  body {
+    font:'Karla', sans-serif;
+  }
+
+  * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  text-align: center;
+  height: 100%;
+}
+
+h1 {
+  font-size: 15vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1;
+  padding: 0;
+  margin: 0;
+  color: white;
+}
+</style>
+</body>
+
+</html>
