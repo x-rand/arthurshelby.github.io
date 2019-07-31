@@ -12,11 +12,19 @@
         <div class="container">
             <div class="box">
                     <div id="app">
-                        <h1 class="title">Breakeven calculator for Bybit</h1>
+                        <h1 class="title">Breakeven calculator for Bybit (100X)</h1>
                         <div class="field">
                             <label class="label">Position Size</label>
                             <div class="control">
                                 <input class="input" type="text" placeholder="Enter your BTC position size" v-model="number_of_contracts">
+                            </div>
+                            <label class="label">Current BTC price USD</label> 
+                            <label class="checkbox">
+                                <input type="checkbox" v-model="enable_realtime_price">
+                                Realtime Price
+                            </label>
+                            <div class="control">
+                                <input class="input" type="text" placeholder="Current BTC price" v-model="btc_current_price_usd">
                             </div>
                         </div>
                         <h1>Current BTC price USD => {{ btc_current_price_usd }}</h1>
@@ -25,6 +33,12 @@
                         <hr>
                         <h1>Limit Order (one side) BE BTC rebate => {{ limit_order_be_btc }}</h1>
                         <h1>Limit Order (one side) BE USD rebate => {{ limit_order_be_usd }}</h1>
+                        <hr>
+                        <h1>Market Long breakeven price (one side) => {{ long_breakeven_price_usd }}</h1>
+                        <h1>Market Short breakeven price (one side) => {{ short_breakeven_price_usd }}</h1>
+                        <h1>Market Long breakeven price (two side) => {{ double_long_breakeven_price_usd }}</h1>
+                        <h1>Market Short breakeven price (two side) => {{ double_short_breakeven_price_usd }}</h1>
+                        
                     </div>
             </div>    
         </div>
@@ -33,38 +47,59 @@
         var app = new Vue({
             el: '#app',
             data: {
+                enable_realtime_price: true,
                 btc_current_price_usd: 0,
                 maker_rebate: -0.025,
                 taker_rebate: 0.075,
                 number_of_contracts: 2000
             },
-            watch: {
-                price: function (val) {
-                    console.log("price change hit => " + val)
-                }
-            },
             computed: {
                 market_order_be_btc: function () {
+                    console.log("Realtime enalbe price => " + this.enable_realtime_price)
                     let market_order_be = ((this.number_of_contracts / this.btc_current_price_usd) / 100) * this.taker_rebate
-                    console.log(market_order_be)
                     return market_order_be
                 },
                 market_order_be_usd: function () {
                     let market_order_be = ((this.number_of_contracts / this.btc_current_price_usd) / 100) * this.taker_rebate
                     let price_in_usd = market_order_be * this.btc_current_price_usd
-                    console.log(price_in_usd)
                     return price_in_usd
                 },
                 limit_order_be_btc: function () {
                     let limit_order_be = ((this.number_of_contracts / this.btc_current_price_usd) / 100) * this.maker_rebate
-                    console.log(limit_order_be)
                     return limit_order_be
                 },
                 limit_order_be_usd: function () {
                     let limit_order_be = ((this.number_of_contracts / this.btc_current_price_usd) / 100) * this.maker_rebate
                     let price_in_usd = limit_order_be * this.btc_current_price_usd
-                    console.log(price_in_usd)
                     return price_in_usd
+                },
+                long_breakeven_price_usd: function() {
+                    //long breakeven would be 7%
+                    let long_be_percent = 0.07/100
+                    let target_be_price_usd = (this.btc_current_price_usd * long_be_percent) + this.btc_current_price_usd
+                    // console.log("P&L => " + target_be_price_usd)
+                    return target_be_price_usd
+                },
+                short_breakeven_price_usd: function() {
+                    //long breakeven would be 7%
+                    let short_be_percent = 0.07/100
+                    let target_be_price_usd = (this.btc_current_price_usd * short_be_percent) - this.btc_current_price_usd
+                    // console.log("P&L => " + target_be_price_usd)
+                    return target_be_price_usd
+                },
+                double_long_breakeven_price_usd: function() {
+                    //long breakeven would be 7%
+                    let long_be_percent = 0.07/100
+                    let target_be_price_usd = ((this.btc_current_price_usd * long_be_percent) * 2)  + this.btc_current_price_usd
+                    // console.log("P&L => " + target_be_price_usd)
+                    return target_be_price_usd
+                },
+                double_short_breakeven_price_usd: function() {
+                    //long breakeven would be 7%
+                    let short_be_percent = 0.07/100
+                    let target_be_price_usd = ((this.btc_current_price_usd * short_be_percent) * 2) - this.btc_current_price_usd
+                    // console.log("P&L => " + target_be_price_usd)
+                    return target_be_price_usd
                 }
             }
         })
@@ -74,9 +109,12 @@
             console.log('socket open')
         };
         ws.onmessage = function (evt) {
-            let data = JSON.parse(evt.data)
-            let vprice = data["data"][0].price;
-            app.btc_current_price_usd = Math.round(vprice);
+            if(app.enable_realtime_price){
+                let data = JSON.parse(evt.data)
+                let vprice = data["data"][0].price;
+                app.btc_current_price_usd = Math.round(vprice);
+            }
+           
         };
         ws.onclose = function (evt) {
             console.log('socket closed')
