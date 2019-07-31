@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Breakeven Bybit</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.5/css/bulma.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Karla&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+        <div class="container">
+            <div class="box">
+                    <div id="app">
+                        <h1 class="title">Breakeven calculator for Bybit</h1>
+                        <div class="field">
+                            <label class="label">Position Size</label>
+                            <div class="control">
+                                <input class="input" type="text" placeholder="Enter your BTC position size" v-model="number_of_contracts">
+                            </div>
+                        </div>
+                        <h1>Current BTC price USD => {{ btc_current_price_usd }}</h1>
+                        <h1>Market Order (one side) BE BTC fee => {{ limit_order_be_btc }}</h1>
+                        <h1>Market Order (one side) BE USD fee => {{ market_order_be_usd }}</h1>
+                        <hr>
+                        <h1>Limit Order (one side) BE BTC rebate => {{ limit_order_be_btc }}</h1>
+                        <h1>Limit Order (one side) BE USD rebate => {{ limit_order_be_usd }}</h1>
+                    </div>
+            </div>    
+        </div>
+
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                btc_current_price_usd: 0,
+                maker_rebate: -0.025,
+                taker_rebate: 0.075,
+                number_of_contracts: 2000
+            },
+            watch: {
+                price: function (val) {
+                    console.log("price change hit => " + val)
+                }
+            },
+            computed: {
+                market_order_be_btc: function () {
+                    let market_order_be = ((this.number_of_contracts / this.btc_current_price_usd) / 100) * this.taker_rebate
+                    console.log(market_order_be)
+                    return market_order_be
+                },
+                market_order_be_usd: function () {
+                    let market_order_be = ((this.number_of_contracts / this.btc_current_price_usd) / 100) * this.taker_rebate
+                    let price_in_usd = market_order_be * this.btc_current_price_usd
+                    console.log(price_in_usd)
+                    return price_in_usd
+                },
+                limit_order_be_btc: function () {
+                    let limit_order_be = ((this.number_of_contracts / this.btc_current_price_usd) / 100) * this.maker_rebate
+                    console.log(limit_order_be)
+                    return limit_order_be
+                },
+                limit_order_be_usd: function () {
+                    let limit_order_be = ((this.number_of_contracts / this.btc_current_price_usd) / 100) * this.maker_rebate
+                    let price_in_usd = limit_order_be * this.btc_current_price_usd
+                    console.log(price_in_usd)
+                    return price_in_usd
+                }
+            }
+        })
+        let url = 'wss://www.bitmex.com/realtime?subscribe=trade:XBTUSD'
+        let ws = new WebSocket(url);
+        ws.onopen = function (evt) {
+            console.log('socket open')
+        };
+        ws.onmessage = function (evt) {
+            let data = JSON.parse(evt.data)
+            let vprice = data["data"][0].price;
+            app.btc_current_price_usd = Math.round(vprice);
+        };
+        ws.onclose = function (evt) {
+            console.log('socket closed')
+        };
+        ws.onerror = function (evt) {
+            console.log('socket connection error')
+        };
+
+    </script>
+
+    <style>
+        * {
+            font-family: 'Karla', sans-serif;
+        }
+        .box{
+            margin-top: 10%;
+        }
+    </style>
+
+</body>
+
+</html>
