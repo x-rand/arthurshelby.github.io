@@ -15,4 +15,4 @@ Default view is ghost screen - ie invisible, just
  Big chad display + alerts - [Click here to view](https://arthurshelby.github.io/advanced.html)
 
 ## PrimeXBT BTC price & alerts
- Big chad display - [Click here to view](https://arthurshelby.github.io/primexbt_advanced.html)
+ Big chad display + alerts - [Click here to view](https://arthurshelby.github.io/primexbt_advanced.html)
