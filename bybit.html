@@ -1,0 +1,139 @@
+<html>
+
+<head>
+  <title>Bitcoin Live Bybit</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <link href="https://fonts.googleapis.com/css?family=Karla" rel="stylesheet">
+</head>
+
+<body>
+
+<dir class="container">
+  <div id="app">
+    <div class="priceview"> 
+      <h1>{{ Math.round(lastPrice) }}</h1>
+    </div>
+
+    <div class="controls">
+       <input type="number" name="low" placeholder="Low price" v-model="lowPrice">
+        <input type="number" name="high" placeholder="High price" v-model="highPrice">
+
+        <audio style="display:none;" id="player" src="sound/red-alert.mp3"></audio>
+        <!-- <a onclick="document.getElementById('player').play()" >Cheer</a> -->
+    </div>
+  </div> <!-- app -->
+</dir> <!-- container -->
+
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            indexPrice: 0,
+            markPrice: 0,
+            lastPrice: 0,
+            lowPrice : 6000,
+            highPrice : 7000,
+        },
+         watch: {
+          indexPrice: function () {
+            this.logPrice()
+          },
+          indexPrice: function () {
+            this.logPrice()
+          },
+          indexPrice: function () {
+            this.logPrice()
+          }
+       },
+        methods: {
+          logPrice: function () {
+            console.log("Mark => " + this.markPrice + " Index => " + this.indexPrice + " Last => " + this.lastPrice)
+          }
+        }
+    })
+
+    let url = 'wss://stream.bybit.com/realtime'
+    let ws = new WebSocket(url);
+    let markPrice, indexPrice, lastPrice = 0
+
+    ws.onopen = function(evt) {
+        console.log('socket open')
+        ws.send('{"op":"ping"}');
+        // ws.send('{"op":"subscribe","args":["topic","topic.filter"]}');
+        // ws.send('{"op":"subscribe","args":["trade", "trade.BTCUSD"]}')
+        ws.send('{"op":"subscribe","args":["instrument.BTCUSD"]}')
+    };
+    ws.onmessage = function(evt) {
+        let data = JSON.parse(evt.data)
+        let parsed = data["data"][0]
+        
+        // console.log(parsed)
+
+        if(parsed.hasOwnProperty("index_price")) {
+          indexPrice = parsed.index_price
+        }
+
+        if(parsed.hasOwnProperty("mark_price")) {
+          markPrice = parsed.mark_price
+        }
+
+        if(parsed.hasOwnProperty("last_price")) {
+          lastPrice = parsed.last_price
+        }
+
+
+        // app.indexPrice = Math.round(indexPrice * 100) / 100 //to get two decimal price
+        // app.markPrice = Math.round(markPrice * 100) / 100 //to get two decimal price
+        // app.lastPrice = Math.round(lastPrice * 100) / 100 //to get two decimal price
+         app.indexPrice = indexPrice
+         app.markPrice = markPrice
+         app.lastPrice = lastPrice
+
+        // console.log("Mark => " + markPrice + " Index => " + indexPrice + " Last => " + lastPrice)
+        // console.log(data.data)
+    };
+    ws.onclose = function(evt) {
+        console.log('socket closed')
+    };
+    ws.onerror = function(evt) {
+       console.log('socket connection error')
+    };
+
+</script>
+
+<style>
+  body {
+    font:'Karla', sans-serif;
+    background-color: #419871;
+  }
+
+  .container {
+    padding: 0;
+    margin: 0;
+     
+  }
+
+  .priceview{
+    padding: 10%;
+  }
+
+  h1 {
+    font-size: 15vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1;
+    padding: 0;
+    margin: 0;
+    color: white;
+  }
+
+  .controls{
+    text-align: center;
+    font:'Karla', sans-serif;
+  } 
+  
+</style>
+</body>
+</html>

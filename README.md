@@ -14,5 +14,5 @@ Default view is ghost screen - ie invisible, just
 ## Advanced version with basic alerts 
  Big chad display + alerts - [Click here to view](https://arthurshelby.github.io/advanced.html)
 
-## Breakeven Calculator for Bybit 
- Breakeven BTC/USD values for Bybit exchange - [Click here to view](https://arthurshelby.github.io/be.html)
+## PrimeXBT BTC price & alerts
+ Big chad display - [Click here to view](https://arthurshelby.github.io/primexbt_advanced.html)
